@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ - หน้าหลัก">
+  <title>หน้าหลัก | ระบบงานสารบรรณ</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="bg-animated"></div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">กำลังโหลด...</div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Sweet Confirm -->
+  <div class="sweet-overlay" id="sweetOverlay">
+    <div class="sweet-card">
+      <div class="sweet-icon">⚠️</div>
+      <div class="sweet-title">ยืนยันการดำเนินการ</div>
+      <div class="sweet-message"></div>
+      <div class="sweet-buttons">
+        <button class="btn btn-danger" id="sweetConfirm">✅ ยืนยัน</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);"
+          id="sweetCancel">❌ ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <div class="logo-display" id="navLogo">
+        <div class="navbar-logo-placeholder">🏫</div>
+      </div>
+      <div class="navbar-title">
+        <span class="main-title school-name-display">โรงเรียน............</span>
+        <span class="sub-title">ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</span>
+      </div>
+    </a>
+    <div class="navbar-right">
+      <div class="nav-user" onclick="goSettings()">
+        <div class="nav-user-avatar">👤</div>
+        <div class="nav-user-info">
+          <span class="nav-user-name">ผู้ดูแลระบบ</span>
+          <span class="nav-user-role">👑 ผู้ดูแลระบบ</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">🚪 ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="container" style="padding-top:32px;">
+    <!-- Welcome Banner -->
+    <div style="margin-bottom:28px;">
+      <h1 style="font-family:'Itim',cursive;font-size:28px;font-weight:700;margin-bottom:6px;">
+        🎉 ยินดีต้อนรับสู่ระบบงานสารบรรณ
+      </h1>
+      <p style="color:rgba(255,255,255,0.6);font-size:15px;" id="welcomeSubtext">โรงเรียน........... |
+        ระบบจัดการเอกสารราชการแบบครบวงจร</p>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="stats-grid" id="statsGrid">
+      <!-- Card 1: หนังสือรับ -->
+      <a class="stat-card stat-card-1" href="received.html" id="cardReceived">
+        <span class="stat-badge">📥 หนังสือรับ</span>
+        <span class="stat-icon">📨</span>
+        <div class="stat-label">หนังสือรับทั้งหมด</div>
+        <div class="stat-number" id="countReceived">0</div>
+        <div class="stat-progress">
+          <div class="stat-progress-fill" id="progReceived" style="width:0%"></div>
+        </div>
+        <div class="stat-progress-text" id="progReceivedText">0 รายการ</div>
+      </a>
+      <!-- Card 2: หนังสือส่ง -->
+      <a class="stat-card stat-card-2" href="sent.html" id="cardSent">
+        <span class="stat-badge">📤 หนังสือส่ง</span>
+        <span class="stat-icon">📮</span>
+        <div class="stat-label">หนังสือส่งทั้งหมด</div>
+        <div class="stat-number" id="countSent">0</div>
+        <div class="stat-progress">
+          <div class="stat-progress-fill" id="progSent" style="width:0%"></div>
+        </div>
+        <div class="stat-progress-text" id="progSentText">0 รายการ</div>
+      </a>
+      <!-- Card 3: คำสั่ง -->
+      <a class="stat-card stat-card-3" href="orders.html" id="cardOrders">
+        <span class="stat-badge">📋 คำสั่ง</span>
+        <span class="stat-icon">📜</span>
+        <div class="stat-label">คำสั่งทั้งหมด</div>
+        <div class="stat-number" id="countOrders">0</div>
+        <div class="stat-progress">
+          <div class="stat-progress-fill" id="progOrders" style="width:0%"></div>
+        </div>
+        <div class="stat-progress-text" id="progOrdersText">0 รายการ</div>
+      </a>
+      <!-- Card 4: บันทึกข้อความ -->
+      <a class="stat-card stat-card-4" href="memos.html" id="cardMemos">
+        <span class="stat-badge">📝 บันทึกข้อความ</span>
+        <span class="stat-icon">🗒️</span>
+        <div class="stat-label">บันทึกข้อความทั้งหมด</div>
+        <div class="stat-number" id="countMemos">0</div>
+        <div class="stat-progress">
+          <div class="stat-progress-fill" id="progMemos" style="width:0%"></div>
+        </div>
+        <div class="stat-progress-text" id="progMemosText">0 รายการ</div>
+      </a>
+    </div>
+
+    <!-- CHART SECTION -->
+    <div class="chart-section">
+      <div class="chart-title">
+        📊 สรุปภาพรวมเอกสารทั้งหมด
+        <span
+          style="font-size:13px;color:rgba(255,255,255,0.4);font-weight:400;margin-left:auto;">อัพเดทอัตโนมัติ</span>
+      </div>
+      <div class="chart-wrapper">
+        <div><canvas id="overviewChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- RECENT DOCS SECTION -->
+    <div class="table-section">
+      <div class="table-toolbar">
+        <div class="table-title">🕒 เอกสารล่าสุด</div>
+      </div>
+      <div class="table-overflow">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ประเภท</th>
+              <th>เลขที่</th>
+              <th>เรื่อง</th>
+              <th>วันที่</th>
+              <th>ผู้เพิ่ม</th>
+            </tr>
+          </thead>
+          <tbody id="recentDocs"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:24px;">
+      <a href="received.html" class="stat-card"
+        style="background:linear-gradient(135deg,rgba(38,166,154,0.2),rgba(38,166,154,0.05));border:1px solid rgba(38,166,154,0.25);padding:20px;text-align:center;text-decoration:none;">
+        <span style="font-size:32px;display:block;margin-bottom:8px;">📨</span>
+        <div style="font-size:14px;font-weight:600;">จัดการหนังสือรับ</div>
+      </a>
+      <a href="sent.html" class="stat-card"
+        style="background:linear-gradient(135deg,rgba(2,136,209,0.2),rgba(2,136,209,0.05));border:1px solid rgba(2,136,209,0.25);padding:20px;text-align:center;text-decoration:none;">
+        <span style="font-size:32px;display:block;margin-bottom:8px;">📮</span>
+        <div style="font-size:14px;font-weight:600;">จัดการหนังสือส่ง</div>
+      </a>
+      <a href="orders.html" class="stat-card"
+        style="background:linear-gradient(135deg,rgba(245,124,0,0.2),rgba(245,124,0,0.05));border:1px solid rgba(245,124,0,0.25);padding:20px;text-align:center;text-decoration:none;">
+        <span style="font-size:32px;display:block;margin-bottom:8px;">📜</span>
+        <div style="font-size:14px;font-weight:600;">จัดการคำสั่ง</div>
+      </a>
+      <a href="memos.html" class="stat-card"
+        style="background:linear-gradient(135deg,rgba(74,44,109,0.3),rgba(74,44,109,0.05));border:1px solid rgba(74,44,109,0.35);padding:20px;text-align:center;text-decoration:none;">
+        <span style="font-size:32px;display:block;margin-bottom:8px;">🗒️</span>
+        <div style="font-size:14px;font-weight:600;">บันทึกข้อความ</div>
+      </a>
+      <a href="settings.html" class="stat-card"
+        style="background:linear-gradient(135deg,rgba(251,192,45,0.2),rgba(251,192,45,0.05));border:1px solid rgba(251,192,45,0.25);padding:20px;text-align:center;text-decoration:none;"
+        id="settingsQuick">
+        <span style="font-size:32px;display:block;margin-bottom:8px;">⚙️</span>
+        <div style="font-size:14px;font-weight:600;">ตั้งค่าระบบ</div>
+      </a>
+      <a href="users.html" class="stat-card"
+        style="background:linear-gradient(135deg,rgba(239,83,80,0.2),rgba(239,83,80,0.05));border:1px solid rgba(239,83,80,0.25);padding:20px;text-align:center;text-decoration:none;"
+        id="usersQuick">
+        <span style="font-size:32px;display:block;margin-bottom:8px;">👥</span>
+        <div style="font-size:14px;font-weight:600;">จัดการผู้ใช้</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <strong>ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</strong><br>
+    <span class="school-name-display">โรงเรียน............</span> &nbsp;|&nbsp; © 2569 สงวนลิขสิทธิ์
+  </footer>
+
+  <script src="js/core.js"></script>
+  <script>
+    // Auth check
+    initApp();
+    const session = getSession();
+    if (!session) window.location.href = 'login.html';
+
+    // Hide admin-only features if not admin
+    if (session && session.role !== 'admin') {
+      const settingsQuick = document.getElementById('settingsQuick');
+      const usersQuick = document.getElementById('usersQuick');
+      if (settingsQuick) settingsQuick.style.display = 'none';
+      if (usersQuick) usersQuick.style.display = 'none';
+    }
+
+    function goSettings() {
+      if (session && session.role === 'admin') {
+        window.location.href = 'settings.html';
+      } else {
+        showToast('ไม่มีสิทธิ์', 'เฉพาะผู้ดูแลระบบเท่านั้น', 'warning');
+      }
+    }
+
+    function handleLogout() {
+      sweetConfirm('ออกจากระบบ', 'คุณต้องการออกจากระบบใช่หรือไม่?', '🚪').then(ok => {
+        if (ok) {
+          withLoading(() => {
+            clearSession();
+          }, 'กำลังออกจากระบบ...', 700).then(() => {
+            window.location.href = 'login.html';
+          });
+        }
+      });
+    }
+
+    let overviewChart = null;
+
+    function updateDashboard() {
+      const received = getStorage(STORAGE.received, []);
+      const sent = getStorage(STORAGE.sent, []);
+      const orders = getStorage(STORAGE.orders, []);
+      const memos = getStorage(STORAGE.memos, []);
+
+      const total = received.length + sent.length + orders.length + memos.length;
+      const max = Math.max(total, 1);
+
+      // Update counts
+      animateNumber('countReceived', received.length);
+      animateNumber('countSent', sent.length);
+      animateNumber('countOrders', orders.length);
+      animateNumber('countMemos', memos.length);
+
+      // Progress bars
+      const pct = (n) => Math.max(5, Math.round((n / max) * 100));
+      setTimeout(() => {
+        document.getElementById('progReceived').style.width = pct(received.length) + '%';
+        document.getElementById('progSent').style.width = pct(sent.length) + '%';
+        document.getElementById('progOrders').style.width = pct(orders.length) + '%';
+        document.getElementById('progMemos').style.width = pct(memos.length) + '%';
+      }, 300);
+      document.getElementById('progReceivedText').textContent = `${received.length} รายการ`;
+      document.getElementById('progSentText').textContent = `${sent.length} รายการ`;
+      document.getElementById('progOrdersText').textContent = `${orders.length} รายการ`;
+      document.getElementById('progMemosText').textContent = `${memos.length} รายการ`;
+
+      // Chart
+      updateChart(received.length, sent.length, orders.length, memos.length);
+
+      // Recent docs
+      const allDocs = [
+        ...received.map(d => ({ type: 'หนังสือรับ', typeClass: 'badge-primary', icon: '📨', no: d.no, subject: d.subject, date: d.date, by: d.createdBy || '-' })),
+        ...sent.map(d => ({ type: 'หนังสือส่ง', typeClass: 'badge-blue', icon: '📮', no: d.no, subject: d.subject, date: d.date, by: d.createdBy || '-' })),
+        ...orders.map(d => ({ type: 'คำสั่ง', typeClass: 'badge-orange', icon: '📜', no: d.no, subject: d.subject, date: d.date, by: d.createdBy || '-' })),
+        ...memos.map(d => ({ type: 'บันทึกข้อความ', typeClass: 'badge-purple', icon: '🗒️', no: d.no, subject: d.subject, date: d.date, by: d.createdBy || '-' }))
+      ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+
+      const tbody = document.getElementById('recentDocs');
+      if (allDocs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">ยังไม่มีเอกสาร เริ่มเพิ่มเอกสารได้เลย!</div></div></td></tr>`;
+      } else {
+        tbody.innerHTML = allDocs.map((d, i) => `
+          <tr>
+            <td><span class="row-num">${i + 1}</span></td>
+            <td><span class="badge ${d.typeClass}">${d.icon} ${d.type}</span></td>
+            <td><strong>${d.no || '-'}</strong></td>
+            <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.subject || '-'}</td>
+            <td>${formatDate(d.date)}</td>
+            <td><span style="color:rgba(255,255,255,0.5);font-size:12px;">${d.by}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function animateNumber(id, target) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const start = parseInt(el.textContent) || 0;
+      const dur = 800;
+      const startTime = performance.now();
+      const update = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / dur, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(start + (target - start) * eased);
+        if (progress < 1) requestAnimationFrame(update);
+      };
+      requestAnimationFrame(update);
+    }
+
+    function updateChart(r, s, o, m) {
+      const ctx = document.getElementById('overviewChart').getContext('2d');
+      const data = {
+        labels: ['📨 หนังสือรับ', '📮 หนังสือส่ง', '📜 คำสั่ง', '🗒️ บันทึกข้อความ'],
+        datasets: [{
+          label: 'จำนวนเอกสาร',
+          data: [r, s, o, m],
+          backgroundColor: [
+            'rgba(38,166,154,0.7)',
+            'rgba(2,136,209,0.7)',
+            'rgba(245,124,0,0.7)',
+            'rgba(74,44,109,0.8)'
+          ],
+          borderColor: ['#26A69A', '#0288D1', '#F57C00', '#4A2C6D'],
+          borderWidth: 2,
+          borderRadius: 10,
+          borderSkipped: false,
+        }]
+      };
+      if (overviewChart) {
+        overviewChart.data = data;
+        overviewChart.update('active');
+        return;
+      }
+      overviewChart = new Chart(ctx, {
+        type: 'bar',
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15,25,35,0.95)',
+              borderColor: 'rgba(38,166,154,0.3)',
+              borderWidth: 1,
+              titleFont: { family: 'Kanit', size: 14 },
+              bodyFont: { family: 'Kanit', size: 13 },
+              padding: 12,
+              callbacks: {
+                label: ctx => ` จำนวน: ${ctx.parsed.y} รายการ`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: 'rgba(255,255,255,0.7)', font: { family: 'Kanit', size: 13 } }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)' },
+              ticks: { color: 'rgba(255,255,255,0.7)', font: { family: 'Kanit', size: 12 }, stepSize: 1 },
+              beginAtZero: true
+            }
+          },
+          animation: { duration: 1000, easing: 'easeOutQuart' }
+        }
+      });
+    }
+
+    // Init
+    updateNavbar();
+    const settings = getSettings();
+    document.getElementById('welcomeSubtext').textContent =
+      `${settings.schoolName} | ระบบจัดการเอกสารราชการแบบครบวงจร`;
+    document.querySelectorAll('.school-name-display').forEach(el => el.textContent = settings.schoolName);
+
+    showLoading('กำลังโหลดข้อมูล...');
+    setTimeout(() => {
+      updateDashboard();
+      hideLoading();
+      showToast('โหลดข้อมูลสำเร็จ', `ยินดีต้อนรับ ${session?.name || 'ผู้ใช้'}`, 'success');
+    }, 800);
+  </script>
+</body>
+
+</html>

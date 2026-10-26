@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ระบบงานสารบรรณ - ตั้งค่าระบบ">
+  <title>ตั้งค่าระบบ | ระบบงานสารบรรณ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="bg-animated"></div>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">กำลังดำเนินการ...</div>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="sweet-overlay" id="sweetOverlay">
+    <div class="sweet-card">
+      <div class="sweet-icon">⚠️</div>
+      <div class="sweet-title">ยืนยันการดำเนินการ</div>
+      <div class="sweet-message"></div>
+      <div class="sweet-buttons">
+        <button class="btn btn-danger" id="sweetConfirm">✅ ยืนยัน</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);" id="sweetCancel">❌ ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <div class="logo-display" id="navLogo"><div class="navbar-logo-placeholder">🏫</div></div>
+      <div class="navbar-title">
+        <span class="main-title school-name-display">โรงเรียน............</span>
+        <span class="sub-title">ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</span>
+      </div>
+    </a>
+    <div class="navbar-right">
+      <div class="nav-user">
+        <div class="nav-user-avatar">👤</div>
+        <div class="nav-user-info">
+          <span class="nav-user-name">ผู้ดูแลระบบ</span>
+          <span class="nav-user-role">👑 ผู้ดูแลระบบ</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">🚪 ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <div class="page-header-left">
+        <a href="index.html" class="btn-back">⬅️ กลับหน้าหลัก</a>
+        <div>
+          <div class="page-title">⚙️ ตั้งค่าระบบ</div>
+          <div class="page-subtitle">ปรับแต่งโรงเรียนและระบบงานสารบรรณ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-grid">
+      <!-- School Info Card -->
+      <div class="settings-card">
+        <div class="settings-card-title">🏫 ข้อมูลโรงเรียน</div>
+
+        <!-- Logo Upload -->
+        <div style="text-align:center;margin-bottom:20px;">
+          <div class="upload-logo-area" id="logoUploadArea" onclick="document.getElementById('logoInput').click()">
+            <div id="logoPreview">
+              <span class="upload-logo-placeholder">📷</span>
+            </div>
+            <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+          </div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:8px;">คลิกเพื่ออัปโหลดโลโก้โรงเรียน</div>
+          <button class="btn btn-sm" style="background:rgba(239,83,80,0.15);border:1px solid rgba(239,83,80,0.3);color:#EF9A9A;margin-top:8px;" onclick="removeLogo()">🗑️ ลบโลโก้</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">🏫 ชื่อโรงเรียน</label>
+          <input type="text" id="settingSchoolName" class="form-control" placeholder="กรอกชื่อโรงเรียน">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📋 ชื่อระบบ</label>
+          <input type="text" id="settingSystemName" class="form-control" placeholder="ชื่อระบบ">
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+      </div>
+
+      <!-- System Info Card -->
+      <div class="settings-card">
+        <div class="settings-card-title">📊 สถิติระบบ</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+          <div style="background:rgba(38,166,154,0.1);border:1px solid rgba(38,166,154,0.2);border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:28px;font-weight:800;color:var(--primary);" id="statR">0</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);">📨 หนังสือรับ</div>
+          </div>
+          <div style="background:rgba(2,136,209,0.1);border:1px solid rgba(2,136,209,0.2);border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:28px;font-weight:800;color:var(--blue);" id="statS">0</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);">📮 หนังสือส่ง</div>
+          </div>
+          <div style="background:rgba(245,124,0,0.1);border:1px solid rgba(245,124,0,0.2);border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:28px;font-weight:800;color:var(--orange);" id="statO">0</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);">📜 คำสั่ง</div>
+          </div>
+          <div style="background:rgba(74,44,109,0.2);border:1px solid rgba(74,44,109,0.3);border-radius:12px;padding:16px;text-align:center;">
+            <div style="font-size:28px;font-weight:800;color:#CE93D8;" id="statM">0</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);">🗒️ บันทึกข้อความ</div>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;">
+          <div class="settings-card-title" style="margin-bottom:14px;font-size:14px;">🗄️ จัดการข้อมูล</div>
+          <button class="btn btn-sm" style="width:100%;background:rgba(251,192,45,0.15);border:1px solid rgba(251,192,45,0.3);color:var(--yellow);margin-bottom:10px;" onclick="exportAll()">
+            📥 ส่งออกข้อมูลทั้งหมด (JSON)
+          </button>
+          <button class="btn btn-sm" style="width:100%;background:rgba(2,136,209,0.15);border:1px solid rgba(2,136,209,0.3);color:var(--blue);margin-bottom:10px;" onclick="importData()">
+            📤 นำเข้าข้อมูล (JSON)
+          </button>
+          <input type="file" id="importInput" accept=".json" style="display:none" onchange="handleImport(event)">
+          <button class="btn btn-sm" style="width:100%;background:rgba(211,47,47,0.15);border:1px solid rgba(211,47,47,0.3);color:#EF9A9A;" onclick="clearAllData()">
+            ⚠️ ลบข้อมูลทั้งหมด (รีเซ็ต)
+          </button>
+        </div>
+      </div>
+
+      <!-- Theme Color Card -->
+      <div class="settings-card">
+        <div class="settings-card-title">🎨 ธีมสีระบบ</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#26A69A,#00695C);cursor:pointer;box-shadow:0 4px 12px rgba(38,166,154,0.4);border:2px solid rgba(255,255,255,0.2);" title="#26A69A"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#AED581,#689F38);cursor:pointer;box-shadow:0 4px 12px rgba(174,213,129,0.4);" title="#AED581"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#FFCA28,#F9A825);cursor:pointer;box-shadow:0 4px 12px rgba(255,202,40,0.4);" title="#FFCA28"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#FF8A65,#BF360C);cursor:pointer;box-shadow:0 4px 12px rgba(255,138,101,0.4);" title="#FF8A65"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#EF5350,#B71C1C);cursor:pointer;box-shadow:0 4px 12px rgba(239,83,80,0.4);" title="#EF5350"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#4A2C6D,#7B1FA2);cursor:pointer;box-shadow:0 4px 12px rgba(74,44,109,0.4);" title="#4A2C6D"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#D32F2F,#7F0000);cursor:pointer;box-shadow:0 4px 12px rgba(211,47,47,0.4);" title="#D32F2F"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#F57C00,#BF360C);cursor:pointer;box-shadow:0 4px 12px rgba(245,124,0,0.4);" title="#F57C00"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#FBC02D,#F57F17);cursor:pointer;box-shadow:0 4px 12px rgba(251,192,45,0.4);" title="#FBC02D"></div>
+          <div style="width:100%;aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#0288D1,#01579B);cursor:pointer;box-shadow:0 4px 12px rgba(2,136,209,0.4);" title="#0288D1"></div>
+        </div>
+        <p style="font-size:13px;color:rgba(255,255,255,0.4);text-align:center;">ธีมสีเริ่มต้นของระบบ (v1.0)</p>
+      </div>
+
+      <!-- About Card -->
+      <div class="settings-card">
+        <div class="settings-card-title">ℹ️ เกี่ยวกับระบบ</div>
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">🏫</div>
+          <div style="font-family:'Itim',cursive;font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;">ระบบงานสารบรรณ</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.8;">
+            รับ-ส่ง-คำสั่ง-บันทึกข้อความ<br>
+            <span style="color:var(--primary);">เวอร์ชั่น 1.0.0</span><br>
+            ออกแบบด้วย ❤️ สำหรับโรงเรียน<br>
+            Font: Kanit + Itim | Chart.js
+          </div>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;">
+          <a href="users.html" class="btn btn-primary" style="width:100%;display:flex;justify-content:center;text-decoration:none;">
+            👥 จัดการผู้ใช้งาน
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <strong>ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</strong><br>
+    <span class="school-name-display">โรงเรียน............</span> &nbsp;|&nbsp; © 2567 สงวนลิขสิทธิ์
+  </footer>
+
+  <script src="js/core.js"></script>
+  <script>
+    initApp();
+    const session = getSession();
+    if (!session) window.location.href = 'login.html';
+    if (session && session.role !== 'admin') {
+      showToast('ไม่มีสิทธิ์', 'เฉพาะผู้ดูแลระบบเท่านั้น', 'error');
+      setTimeout(() => window.location.href = 'index.html', 1000);
+    }
+    updateNavbar();
+
+    // Load settings
+    function loadSettings() {
+      const s = getSettings();
+      document.getElementById('settingSchoolName').value = s.schoolName || '';
+      document.getElementById('settingSystemName').value = s.systemName || '';
+      if (s.logoUrl) {
+        document.getElementById('logoPreview').innerHTML = `<img src="${s.logoUrl}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      }
+    }
+
+    function handleLogoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        document.getElementById('logoPreview').innerHTML = `<img src="${dataUrl}" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        const s = getSettings();
+        s.logoUrl = dataUrl;
+        setStorage(STORAGE.settings, s);
+        showToast('อัปโหลดโลโก้สำเร็จ', '', 'success');
+        updateNavbar();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeLogo() {
+      sweetConfirm('ลบโลโก้', 'ต้องการลบโลโก้โรงเรียนใช่หรือไม่?', '🗑️').then(ok => {
+        if (!ok) return;
+        const s = getSettings();
+        s.logoUrl = '';
+        setStorage(STORAGE.settings, s);
+        document.getElementById('logoPreview').innerHTML = '<span class="upload-logo-placeholder">📷</span>';
+        showToast('ลบโลโก้แล้ว', '', 'success');
+        updateNavbar();
+      });
+    }
+
+    function saveSettings() {
+      const schoolName = document.getElementById('settingSchoolName').value.trim();
+      const systemName = document.getElementById('settingSystemName').value.trim();
+      if (!schoolName) { showToast('กรุณากรอกชื่อโรงเรียน', '', 'warning'); return; }
+      withLoading(() => {
+        const s = getSettings();
+        s.schoolName = schoolName;
+        s.systemName = systemName;
+        setStorage(STORAGE.settings, s);
+        updateNavbar();
+        document.querySelectorAll('.school-name-display').forEach(el => el.textContent = schoolName);
+        showToast('บันทึกการตั้งค่าสำเร็จ', `ชื่อโรงเรียน: ${schoolName}`, 'success');
+      }, 'กำลังบันทึก...', 600);
+    }
+
+    // Stats
+    function loadStats() {
+      document.getElementById('statR').textContent = getStorage(STORAGE.received, []).length;
+      document.getElementById('statS').textContent = getStorage(STORAGE.sent, []).length;
+      document.getElementById('statO').textContent = getStorage(STORAGE.orders, []).length;
+      document.getElementById('statM').textContent = getStorage(STORAGE.memos, []).length;
+    }
+
+    function exportAll() {
+      const allData = {
+        settings: getSettings(),
+        received: getStorage(STORAGE.received, []),
+        sent: getStorage(STORAGE.sent, []),
+        orders: getStorage(STORAGE.orders, []),
+        memos: getStorage(STORAGE.memos, []),
+        exportDate: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `saraban_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      showToast('ส่งออกสำเร็จ', 'ดาวน์โหลด JSON backup เรียบร้อย', 'success');
+    }
+
+    function importData() {
+      document.getElementById('importInput').click();
+    }
+
+    function handleImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          sweetConfirm('ยืนยันการนำเข้า', 'ข้อมูลปัจจุบันจะถูกแทนที่ด้วยข้อมูลใหม่ ต้องการดำเนินการต่อ?', '📤').then(ok => {
+            if (!ok) return;
+            withLoading(() => {
+              if (data.received) setStorage(STORAGE.received, data.received);
+              if (data.sent) setStorage(STORAGE.sent, data.sent);
+              if (data.orders) setStorage(STORAGE.orders, data.orders);
+              if (data.memos) setStorage(STORAGE.memos, data.memos);
+              if (data.settings) setStorage(STORAGE.settings, data.settings);
+              loadStats();
+              loadSettings();
+              updateNavbar();
+              showToast('นำเข้าข้อมูลสำเร็จ', '', 'success');
+            }, 'กำลังนำเข้า...', 800);
+          });
+        } catch {
+          showToast('ไฟล์ไม่ถูกต้อง', 'ไฟล์ JSON ไม่ถูกต้อง', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearAllData() {
+      sweetConfirm('⚠️ ลบข้อมูลทั้งหมด', 'ข้อมูลเอกสารทั้งหมดจะถูกลบอย่างถาวร ไม่สามารถกู้คืนได้!', '⚠️').then(ok => {
+        if (!ok) return;
+        sweetConfirm('ยืนยันอีกครั้ง', 'คุณแน่ใจ 100% ที่จะลบข้อมูลทั้งหมด?', '🔥').then(ok2 => {
+          if (!ok2) return;
+          withLoading(() => {
+            setStorage(STORAGE.received, []);
+            setStorage(STORAGE.sent, []);
+            setStorage(STORAGE.orders, []);
+            setStorage(STORAGE.memos, []);
+            loadStats();
+            showToast('รีเซ็ตข้อมูลสำเร็จ', 'ข้อมูลทั้งหมดถูกลบแล้ว', 'success');
+          }, 'กำลังรีเซ็ต...', 800);
+        });
+      });
+    }
+
+    function handleLogout() {
+      sweetConfirm('ออกจากระบบ', 'ต้องการออกจากระบบ?', '🚪').then(ok => {
+        if (ok) { clearSession(); window.location.href = 'login.html'; }
+      });
+    }
+
+    showLoading('กำลังโหลด...');
+    setTimeout(() => {
+      loadSettings();
+      loadStats();
+      hideLoading();
+    }, 600);
+  </script>
+</body>
+</html>

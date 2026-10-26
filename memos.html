@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ระบบงานสารบรรณ - บันทึกข้อความ">
+  <title>บันทึกข้อความ | ระบบงานสารบรรณ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="bg-animated"></div>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">กำลังดำเนินการ...</div>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="sweet-overlay" id="sweetOverlay">
+    <div class="sweet-card">
+      <div class="sweet-icon">🗑️</div>
+      <div class="sweet-title">ยืนยันการลบ</div>
+      <div class="sweet-message">คุณต้องการลบรายการนี้ใช่หรือไม่?</div>
+      <div class="sweet-buttons">
+        <button class="btn btn-danger" id="sweetConfirm">🗑️ ลบ</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);"
+          id="sweetCancel">↩️ ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalMemos">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modalMemosTitle">🗒️ เพิ่มบันทึกข้อความ</div>
+        <button class="modal-close" onclick="closeModal('modalMemos')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">🔢 เลขบันทึกข้อความ <span>*</span></label>
+            <input type="text" id="fNo" class="form-control" placeholder="เช่น บข.001/2567">
+          </div>
+          <div class="form-group">
+            <label class="form-label">📅 วันที่ <span>*</span></label>
+            <input type="date" id="fDate" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📝 เรื่อง <span>*</span></label>
+          <input type="text" id="fSubject" class="form-control" placeholder="หัวข้อบันทึกข้อความ">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">👤 ผู้ขอ <span>*</span></label>
+            <input type="text" id="fRequester" class="form-control" placeholder="ชื่อผู้ขอ">
+          </div>
+          <div class="form-group">
+            <label class="form-label">🏢 หน่วยงาน <span>*</span></label>
+            <input type="text" id="fDept" class="form-control" placeholder="หน่วยงาน / ฝ่าย">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📎 ไฟล์แนบ (ไม่บังคับ - รองรับหลายไฟล์)</label>
+          <div class="file-upload-area" id="uploadArea" ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <input type="file" id="fFiles" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+              onchange="handleFileChange(event)">
+            <div class="file-upload-icon">☁️</div>
+            <div class="file-upload-text"><strong>คลิกเพื่อเลือกไฟล์</strong> หรือลากไฟล์มาวาง</div>
+          </div>
+          <div class="file-list" id="fileList"></div>
+          <div id="existingFiles" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);"
+          onclick="closeModal('modalMemos')">❌ ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveMemos()">💾 บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <div class="logo-display" id="navLogo">
+        <div class="navbar-logo-placeholder">🏫</div>
+      </div>
+      <div class="navbar-title">
+        <span class="main-title school-name-display">โรงเรียน............</span>
+        <span class="sub-title">ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</span>
+      </div>
+    </a>
+    <div class="navbar-right">
+      <div class="nav-user">
+        <div class="nav-user-avatar">👤</div>
+        <div class="nav-user-info">
+          <span class="nav-user-name">ผู้ดูแลระบบ</span>
+          <span class="nav-user-role">👑 ผู้ดูแลระบบ</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">🚪 ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <div class="page-header-left">
+        <a href="index.html" class="btn-back">⬅️ กลับหน้าหลัก</a>
+        <div>
+          <div class="page-title">🗒️ บันทึกข้อความ</div>
+          <div class="page-subtitle">จัดการและบันทึกข้อความทั้งหมด</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <span class="badge badge-purple" id="totalBadge">🗒️ 0 รายการ</span>
+        <button class="btn btn-primary" onclick="openAddModal()">➕ เพิ่มบันทึกข้อความ</button>
+      </div>
+    </div>
+
+    <div class="table-section">
+      <div class="table-toolbar">
+        <div class="table-title">📋 รายการบันทึกข้อความทั้งหมด</div>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="ค้นหาบันทึกข้อความ..." oninput="renderTable()">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="exportData()">📥 ส่งออก</button>
+      </div>
+      <div class="table-overflow">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>เลขบันทึก</th>
+              <th>เรื่อง</th>
+              <th>ผู้ขอ</th>
+              <th>หน่วยงาน</th>
+              <th>วันที่</th>
+              <th>ไฟล์แนบ</th>
+              <th>ผู้บันทึก</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <strong>ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</strong><br>
+    <span class="school-name-display">โรงเรียน............</span> &nbsp;|&nbsp; © 2569 สงวนลิขสิทธิ์
+  </footer>
+
+  <script src="js/core.js"></script>
+  <script>
+    initApp();
+    const session = getSession();
+    if (!session) window.location.href = 'login.html';
+    updateNavbar();
+
+    let editMode = false, editingId = null, pendingFiles = [];
+
+    function openAddModal() {
+      editMode = false; editingId = null;
+      document.getElementById('modalMemosTitle').innerHTML = '🗒️ เพิ่มบันทึกข้อความ';
+      ['editId', 'fNo', 'fSubject', 'fRequester', 'fDept'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('fFiles').value = '';
+      document.getElementById('fileList').innerHTML = '';
+      document.getElementById('existingFiles').innerHTML = '';
+      pendingFiles = [];
+      openModal('modalMemos');
+    }
+
+    function openEditModal(id) {
+      const data = getStorage(STORAGE.memos, []);
+      const item = data.find(d => d.id === id);
+      if (!item) return;
+      editMode = true; editingId = id;
+      document.getElementById('modalMemosTitle').innerHTML = '✏️ แก้ไขบันทึกข้อความ';
+      document.getElementById('editId').value = id;
+      document.getElementById('fNo').value = item.no || '';
+      document.getElementById('fSubject').value = item.subject || '';
+      document.getElementById('fRequester').value = item.requester || '';
+      document.getElementById('fDept').value = item.dept || '';
+      document.getElementById('fDate').value = item.date || '';
+      document.getElementById('fFiles').value = '';
+      document.getElementById('fileList').innerHTML = '';
+      pendingFiles = [];
+      const ef = document.getElementById('existingFiles');
+      ef.innerHTML = '';
+      (item.files || []).forEach(f => { const b = document.createElement('span'); b.className = 'badge badge-file'; b.innerHTML = `📎 ${f}`; ef.appendChild(b); });
+      openModal('modalMemos');
+    }
+
+    function handleFileChange(e) {
+      pendingFiles = Array.from(e.target.files);
+      document.getElementById('fileList').innerHTML = pendingFiles.map(f => `<div class="file-item">📎 <span>${f.name}</span></div>`).join('');
+    }
+    function handleDragOver(e) { e.preventDefault(); document.getElementById('uploadArea').classList.add('dragover'); }
+    function handleDragLeave(e) { document.getElementById('uploadArea').classList.remove('dragover'); }
+    function handleDrop(e) {
+      e.preventDefault(); document.getElementById('uploadArea').classList.remove('dragover');
+      pendingFiles = Array.from(e.dataTransfer.files);
+      document.getElementById('fileList').innerHTML = pendingFiles.map(f => `<div class="file-item">📎 <span>${f.name}</span></div>`).join('');
+    }
+
+    function saveMemos() {
+      const no = document.getElementById('fNo').value.trim();
+      const subject = document.getElementById('fSubject').value.trim();
+      const requester = document.getElementById('fRequester').value.trim();
+      const dept = document.getElementById('fDept').value.trim();
+      const date = document.getElementById('fDate').value;
+      if (!no || !subject || !requester || !dept || !date) { showToast('กรุณากรอกข้อมูล', 'โปรดกรอกข้อมูลให้ครบ', 'warning'); return; }
+      withLoading(() => {
+        const data = getStorage(STORAGE.memos, []);
+        const fileNames = pendingFiles.map(f => f.name);
+        if (editMode && editingId) {
+          const idx = data.findIndex(d => d.id === editingId);
+          if (idx !== -1) data[idx] = { ...data[idx], no, subject, requester, dept, date, files: [...(data[idx].files || []), ...fileNames], updatedAt: new Date().toISOString(), updatedBy: session?.name || '-' };
+        } else {
+          data.unshift({ id: genId(), no, subject, requester, dept, date, files: fileNames, createdAt: new Date().toISOString(), createdBy: session?.name || '-' });
+        }
+        setStorage(STORAGE.memos, data);
+        closeModal('modalMemos');
+        renderTable();
+        showToast(editMode ? 'แก้ไขสำเร็จ' : 'เพิ่มสำเร็จ', `บันทึกเลขที่ ${no}`, 'success');
+      }, 'กำลังบันทึก...', 700);
+    }
+
+    async function deleteMemo(id) {
+      const ok = await sweetConfirm('ยืนยันการลบ', 'ต้องการลบบันทึกข้อความนี้ใช่หรือไม่?', '🗑️');
+      if (!ok) return;
+      withLoading(() => {
+        let data = getStorage(STORAGE.memos, []);
+        data = data.filter(d => d.id !== id);
+        setStorage(STORAGE.memos, data);
+        renderTable();
+        showToast('ลบสำเร็จ', '', 'success');
+      }, 'กำลังลบ...', 500);
+    }
+
+    function renderTable() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      let data = getStorage(STORAGE.memos, []);
+      if (search) data = data.filter(d => (d.no || '').toLowerCase().includes(search) || (d.subject || '').toLowerCase().includes(search) || (d.requester || '').toLowerCase().includes(search) || (d.dept || '').toLowerCase().includes(search));
+      document.getElementById('totalBadge').textContent = `🗒️ ${getStorage(STORAGE.memos, []).length} รายการ`;
+      const tbody = document.getElementById('tableBody');
+      if (!data.length) { tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">ไม่พบข้อมูลบันทึกข้อความ</div></div></td></tr>`; return; }
+      tbody.innerHTML = data.map((d, i) => `
+        <tr>
+          <td><span class="row-num">${i + 1}</span></td>
+          <td><strong style="color:#CE93D8;">${d.no || '-'}</strong></td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.subject || '-'}</td>
+          <td><span class="badge badge-purple">👤 ${d.requester || '-'}</span></td>
+          <td><span style="font-size:13px;color:rgba(255,255,255,0.7);">${d.dept || '-'}</span></td>
+          <td><span class="badge badge-yellow">📅 ${formatDate(d.date)}</span></td>
+          <td>${d.files && d.files.length > 0 ? d.files.map(f => `<span class="badge badge-file">📎 ${f.length > 12 ? f.substr(0, 12) + '...' : f}</span>`).join(' ') : '<span style="color:rgba(255,255,255,0.3);font-size:12px;">ไม่มี</span>'}</td>
+          <td><span style="color:rgba(255,255,255,0.5);font-size:12px;">${d.createdBy || '-'}</span></td>
+          <td><div class="action-group"><button class="btn-action-edit" onclick="openEditModal('${d.id}')">✏️ แก้ไข</button><button class="btn-action-delete" onclick="deleteMemo('${d.id}')">🗑️ ลบ</button></div></td>
+        </tr>
+      `).join('');
+    }
+
+    function exportData() {
+      const data = getStorage(STORAGE.memos, []);
+      if (!data.length) { showToast('ไม่มีข้อมูล', '', 'warning'); return; }
+      let csv = 'เลขบันทึก,เรื่อง,ผู้ขอ,หน่วยงาน,วันที่,ไฟล์แนบ,ผู้บันทึก\n';
+      data.forEach(d => csv += `"${d.no}","${d.subject}","${d.requester}","${d.dept}","${d.date}","${(d.files || []).join('; ')}","${d.createdBy}"\n`);
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `บันทึกข้อความ_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+      showToast('ส่งออกสำเร็จ', '', 'success');
+    }
+
+    function handleLogout() { sweetConfirm('ออกจากระบบ', 'ต้องการออกจากระบบ?', '🚪').then(ok => { if (ok) { clearSession(); window.location.href = 'login.html'; } }); }
+
+    showLoading('กำลังโหลด...');
+    setTimeout(() => { renderTable(); hideLoading(); }, 600);
+  </script>
+</body>
+
+</html>

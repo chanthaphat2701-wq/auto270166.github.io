@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ระบบงานสารบรรณ - จัดการผู้ใช้งาน">
+  <title>จัดการผู้ใช้งาน | ระบบงานสารบรรณ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <div class="bg-animated"></div>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">กำลังดำเนินการ...</div>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+  <div class="sweet-overlay" id="sweetOverlay">
+    <div class="sweet-card">
+      <div class="sweet-icon">⚠️</div>
+      <div class="sweet-title">ยืนยันการดำเนินการ</div>
+      <div class="sweet-message"></div>
+      <div class="sweet-buttons">
+        <button class="btn btn-danger" id="sweetConfirm">✅ ยืนยัน</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);"
+          id="sweetCancel">❌ ยกเลิก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: เพิ่ม/แก้ไขผู้ใช้ -->
+  <div class="modal-overlay" id="modalUser">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modalUserTitle">👤 เพิ่มผู้ใช้งาน</div>
+        <button class="modal-close" onclick="closeModal('modalUser')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editUserId">
+        <div class="form-group">
+          <label class="form-label">👤 ชื่อ-นามสกุล <span>*</span></label>
+          <input type="text" id="uName" class="form-control" placeholder="ชื่อ-นามสกุล">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">🔑 ชื่อผู้ใช้ <span>*</span></label>
+            <input type="text" id="uUsername" class="form-control" placeholder="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">🔐 รหัสผ่าน <span>*</span></label>
+            <input type="password" id="uPassword" class="form-control" placeholder="รหัสผ่าน">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">👥 บทบาท <span>*</span></label>
+            <select id="uRole" class="form-control">
+              <option value="teacher">👨‍🏫 ครู</option>
+              <option value="officer">👷 เจ้าหน้าที่</option>
+              <option value="admin">👑 ผู้ดูแลระบบ</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🏢 หน่วยงาน / ฝ่าย</label>
+            <input type="text" id="uDept" class="form-control" placeholder="เช่น ฝ่ายวิชาการ">
+          </div>
+        </div>
+        <div id="editPasswordNote"
+          style="display:none;background:rgba(255,202,40,0.1);border:1px solid rgba(255,202,40,0.2);border-radius:8px;padding:10px;font-size:12px;color:var(--yellow);">
+          ⚠️ หากไม่ต้องการเปลี่ยนรหัสผ่าน ให้เว้นว่างไว้
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);"
+          onclick="closeModal('modalUser')">❌ ยกเลิก</button>
+        <button class="btn btn-primary" onclick="saveUser()">💾 บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <div class="logo-display" id="navLogo">
+        <div class="navbar-logo-placeholder">🏫</div>
+      </div>
+      <div class="navbar-title">
+        <span class="main-title school-name-display">โรงเรียน............</span>
+        <span class="sub-title">ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</span>
+      </div>
+    </a>
+    <div class="navbar-right">
+      <div class="nav-user">
+        <div class="nav-user-avatar">👤</div>
+        <div class="nav-user-info">
+          <span class="nav-user-name">ผู้ดูแลระบบ</span>
+          <span class="nav-user-role">👑 ผู้ดูแลระบบ</span>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">🚪 ออกจากระบบ</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <div class="page-header-left">
+        <a href="index.html" class="btn-back">⬅️ กลับหน้าหลัก</a>
+        <div>
+          <div class="page-title">👥 จัดการผู้ใช้งาน</div>
+          <div class="page-subtitle">เพิ่ม ลบ แก้ไข ครู และเจ้าหน้าที่ในระบบ</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <span class="badge badge-primary" id="totalUserBadge">👥 0 คน</span>
+        <button class="btn btn-primary" onclick="openAddUserModal()">➕ เพิ่มผู้ใช้</button>
+      </div>
+    </div>
+
+    <!-- Role Filter Tabs -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="btn btn-sm active-tab" id="tab-all" onclick="filterRole('all')"
+        style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;">👥 ทั้งหมด</button>
+      <button class="btn btn-sm" id="tab-admin" onclick="filterRole('admin')"
+        style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">👑 ผู้ดูแล</button>
+      <button class="btn btn-sm" id="tab-teacher" onclick="filterRole('teacher')"
+        style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">👨‍🏫 ครู</button>
+      <button class="btn btn-sm" id="tab-officer" onclick="filterRole('officer')"
+        style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);">👷 เจ้าหน้าที่</button>
+    </div>
+
+    <!-- Search -->
+    <div style="margin-bottom:20px;">
+      <div class="search-box" style="max-width:360px;">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchUserInput" placeholder="ค้นหาชื่อผู้ใช้..." oninput="renderUsers()"
+          style="width:300px;">
+      </div>
+    </div>
+
+    <!-- Users Grid -->
+    <div id="usersGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;"></div>
+  </div>
+
+  <footer class="footer">
+    <strong>ระบบงานสารบรรณ รับ-ส่ง-คำสั่ง-บันทึกข้อความ</strong><br>
+    <span class="school-name-display">โรงเรียน............</span> &nbsp;|&nbsp; © 2569 สงวนลิขสิทธิ์
+  </footer>
+
+  <script src="js/core.js"></script>
+  <script>
+    initApp();
+    const session = getSession();
+    if (!session) window.location.href = 'login.html';
+    if (session && session.role !== 'admin') {
+      showToast('ไม่มีสิทธิ์', 'เฉพาะผู้ดูแลระบบเท่านั้น', 'error');
+      setTimeout(() => window.location.href = 'index.html', 1000);
+    }
+    updateNavbar();
+
+    let currentFilter = 'all';
+    let editMode = false, editingId = null;
+
+    const roleInfo = {
+      admin: { label: '👑 ผู้ดูแลระบบ', badgeClass: 'badge-red', avatar: '👑', color: '#EF9A9A' },
+      teacher: { label: '👨‍🏫 ครู', badgeClass: 'badge-primary', avatar: '👨‍🏫', color: 'var(--primary)' },
+      officer: { label: '👷 เจ้าหน้าที่', badgeClass: 'badge-blue', avatar: '👷', color: 'var(--blue)' }
+    };
+
+    function filterRole(role) {
+      currentFilter = role;
+      document.querySelectorAll('[id^="tab-"]').forEach(t => {
+        t.style.background = 'rgba(255,255,255,0.08)';
+        t.style.color = '';
+        t.style.border = '1px solid rgba(255,255,255,0.15)';
+        t.style.boxShadow = '';
+      });
+      const active = document.getElementById(`tab-${role}`);
+      if (active) {
+        active.style.background = 'linear-gradient(135deg,var(--primary),var(--primary-dark))';
+        active.style.color = 'white';
+        active.style.border = 'none';
+        active.style.boxShadow = '0 4px 15px rgba(38,166,154,0.3)';
+      }
+      renderUsers();
+    }
+
+    function openAddUserModal() {
+      editMode = false; editingId = null;
+      document.getElementById('modalUserTitle').innerHTML = '👤 เพิ่มผู้ใช้งาน';
+      ['editUserId', 'uName', 'uUsername', 'uPassword', 'uDept'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('uRole').value = 'teacher';
+      document.getElementById('editPasswordNote').style.display = 'none';
+      openModal('modalUser');
+    }
+
+    function openEditUserModal(id) {
+      const users = getStorage(STORAGE.users, DEFAULT_USERS);
+      const user = users.find(u => u.id === id);
+      if (!user) return;
+      editMode = true; editingId = id;
+      document.getElementById('modalUserTitle').innerHTML = '✏️ แก้ไขผู้ใช้งาน';
+      document.getElementById('editUserId').value = id;
+      document.getElementById('uName').value = user.name || '';
+      document.getElementById('uUsername').value = user.username || '';
+      document.getElementById('uPassword').value = '';
+      document.getElementById('uRole').value = user.role || 'teacher';
+      document.getElementById('uDept').value = user.department || '';
+      document.getElementById('editPasswordNote').style.display = 'block';
+      openModal('modalUser');
+    }
+
+    function saveUser() {
+      const name = document.getElementById('uName').value.trim();
+      const username = document.getElementById('uUsername').value.trim();
+      const password = document.getElementById('uPassword').value.trim();
+      const role = document.getElementById('uRole').value;
+      const department = document.getElementById('uDept').value.trim();
+
+      if (!name || !username) { showToast('กรุณากรอกข้อมูล', 'ชื่อและชื่อผู้ใช้จำเป็น', 'warning'); return; }
+      if (!editMode && !password) { showToast('กรุณากรอกรหัสผ่าน', '', 'warning'); return; }
+
+      withLoading(() => {
+        const users = getStorage(STORAGE.users, DEFAULT_USERS);
+
+        // Check duplicate username
+        const dup = users.find(u => u.username === username && u.id !== editingId);
+        if (dup) { showToast('ชื่อผู้ใช้ซ้ำ', `"${username}" ถูกใช้แล้ว`, 'error'); return; }
+
+        if (editMode && editingId) {
+          const idx = users.findIndex(u => u.id === editingId);
+          if (idx !== -1) {
+            users[idx] = {
+              ...users[idx], name, username, role, department,
+              ...(password ? { password } : {})
+            };
+          }
+        } else {
+          users.push({ id: genId(), name, username, password, role, department, createdAt: new Date().toISOString() });
+        }
+
+        setStorage(STORAGE.users, users);
+        closeModal('modalUser');
+        renderUsers();
+        showToast(editMode ? 'แก้ไขผู้ใช้สำเร็จ' : 'เพิ่มผู้ใช้สำเร็จ', name, 'success');
+      }, 'กำลังบันทึก...', 600);
+    }
+
+    async function deleteUser(id) {
+      if (id === 'admin') { showToast('ไม่สามารถลบได้', 'ไม่สามารถลบบัญชี admin หลักได้', 'warning'); return; }
+      const ok = await sweetConfirm('ยืนยันการลบผู้ใช้', 'ต้องการลบผู้ใช้รายนี้ใช่หรือไม่?', '🗑️');
+      if (!ok) return;
+      withLoading(() => {
+        let users = getStorage(STORAGE.users, DEFAULT_USERS);
+        users = users.filter(u => u.id !== id);
+        setStorage(STORAGE.users, users);
+        renderUsers();
+        showToast('ลบผู้ใช้สำเร็จ', '', 'success');
+      }, 'กำลังลบ...', 500);
+    }
+
+    function renderUsers() {
+      const search = document.getElementById('searchUserInput').value.toLowerCase();
+      let users = getStorage(STORAGE.users, DEFAULT_USERS);
+      if (currentFilter !== 'all') users = users.filter(u => u.role === currentFilter);
+      if (search) users = users.filter(u =>
+        (u.name || '').toLowerCase().includes(search) ||
+        (u.username || '').toLowerCase().includes(search)
+      );
+
+      document.getElementById('totalUserBadge').textContent = `👥 ${getStorage(STORAGE.users, DEFAULT_USERS).length} คน`;
+
+      const grid = document.getElementById('usersGrid');
+      if (!users.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">👤</div><div class="empty-text">ไม่พบผู้ใช้งาน</div></div>`;
+        return;
+      }
+
+      grid.innerHTML = users.map(u => {
+        const ri = roleInfo[u.role] || roleInfo.teacher;
+        const isAdmin = u.id === 'admin';
+        return `
+          <div class="user-card">
+            <div class="user-avatar" style="background:linear-gradient(135deg,rgba(38,166,154,0.2),rgba(38,166,154,0.05));border:1px solid rgba(38,166,154,0.2);font-size:24px;">
+              ${ri.avatar}
+            </div>
+            <div class="user-info">
+              <div class="user-name">${u.name || '-'}</div>
+              <div class="user-meta">
+                <span>👤 ${u.username}</span>
+                ${u.department ? `&nbsp;|&nbsp; 🏢 ${u.department}` : ''}
+              </div>
+              <div style="margin-top:6px;">
+                <span class="badge ${ri.badgeClass}">${ri.label}</span>
+                ${isAdmin ? '<span class="badge badge-yellow" style="margin-left:6px;">🔒 ค่าเริ่มต้น</span>' : ''}
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+              <button class="btn-action-edit" onclick="openEditUserModal('${u.id}')">✏️ แก้ไข</button>
+              ${!isAdmin ? `<button class="btn-action-delete" onclick="deleteUser('${u.id}')">🗑️ ลบ</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handleLogout() {
+      sweetConfirm('ออกจากระบบ', 'ต้องการออกจากระบบ?', '🚪').then(ok => {
+        if (ok) { clearSession(); window.location.href = 'login.html'; }
+      });
+    }
+
+    showLoading('กำลังโหลด...');
+    setTimeout(() => { renderUsers(); hideLoading(); }, 600);
+  </script>
+</body>
+
+</html>
